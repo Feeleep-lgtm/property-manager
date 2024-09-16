@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Rental" ADD COLUMN     "isPaid" BOOLEAN NOT NULL DEFAULT false,
+ALTER COLUMN "startDate" DROP NOT NULL;

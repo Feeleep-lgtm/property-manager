@@ -1,0 +1,136 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model JodexAdmin {
+  id        String   @id @unique @default(uuid())
+  email     String   @unique
+  company   String   @default("Jodex")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+  name      String   @default("Jodex Admin")
+  password  String
+}
+
+model User {
+  id               String     @id @unique @default(uuid())
+  userName         String     @unique
+  phoneNumber      String?    @unique
+  email            String     @unique
+  password         String
+  passwordConfirm  String
+  picture          String?
+  company          String     @default("Jodex")
+  createdAT        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  userType         UserType
+  fullName         String
+  role             Role       @default(USER)
+  address          String?
+  governmentId     String?
+  resetCode        String?
+  resetCodeExpires DateTime?
+  Bookmark         Bookmark[]
+  Complain         Complain[]
+  Payment          Payment[]
+  Property         Property[]
+  Rental           Rental[]
+}
+
+model Rental {
+  id         String    @id @default(uuid())
+  propertyId String
+  tenantId   String
+  startDate  DateTime?
+  endDate    DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  paymentId  String?
+  userId     String?
+  isPaid     Boolean   @default(false)
+  payment    Payment?  @relation(fields: [paymentId], references: [id])
+  property   Property  @relation(fields: [propertyId], references: [id])
+  tenant     User      @relation(fields: [tenantId], references: [id])
+}
+
+model Payment {
+  id              String   @id @default(uuid())
+  userId          String
+  createdAt       DateTime @default(now())
+  bankAccountName String
+  notes           String
+  price           Float
+  bank            String
+  propertyId      String
+  accountNumber   Int
+  paidAmount      Float    @default(0)
+  property        Property @relation(fields: [propertyId], references: [id])
+  tenant          User     @relation(fields: [userId], references: [id])
+  Rental          Rental[]
+}
+
+model Property {
+  id                String     @id @unique @default(uuid())
+  rooms             Int
+  address           String
+  createdAT         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  company           String     @default("Jodex")
+  houseType         String
+  bath              Int
+  city              String
+  description       String
+  diningRoom        Int
+  kitchen           Int
+  state             String
+  unit              Int
+  zipCode           Int
+  ownerId           String
+  price             Int
+  pictures          String[]
+  additionalCharges Json?
+  totalRent         Float?
+  latitude          Float?
+  longitude         Float?
+  referralCode      String     @unique
+  Bookmark          Bookmark[]
+  Payment           Payment[]
+  owner             User       @relation(fields: [ownerId], references: [id])
+  rentals           Rental[]
+}
+
+model Bookmark {
+  id         String   @id @default(uuid())
+  propertyId String
+  tenantId   String
+  createdAt  DateTime @default(now())
+  property   Property @relation(fields: [propertyId], references: [id])
+  tenant     User     @relation(fields: [tenantId], references: [id])
+}
+
+model Complain {
+  id               String  @id @default(uuid())
+  property         String
+  contactCaretaker Boolean
+  complain         String
+  userId           String
+  user             User    @relation(fields: [userId], references: [id])
+}
+
+enum UserType {
+  LANDLORD
+  TENANT
+  ADMIN
+  AGENT
+  PROPERTY_MANAGER
+}
+
+enum Role {
+  USER
+  ADMIN
+}
